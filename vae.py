@@ -8,12 +8,14 @@ Credit: https://keras.io/examples/generative/vae/
 import numpy as np
 import tensorflow as tf
 
-from encoder_builder import EncoderBuilder
+from builders import EncoderBuilder, DecoderBuilder
 
 
 class VAE(tf.keras.Model):
-    def __init__(self):
+    def __init__(self, config, **kwargs):
         super(VAE, self).__init__()
+        self.encoder = EncoderBuilder().build_model(config)
+        self.decoder = DecoderBuilder().build_model(config)
 
     def encode(self, inputs):
         raise NotImplementedError
@@ -21,16 +23,9 @@ class VAE(tf.keras.Model):
     def decode(self, inputs):
         raise NotImplementedError
 
+    def train_step(self, data):
+        return {}
 
-class Encoder(VAE):
-    def __init__(self, config):
-        super(VAE, self).__init__()
-        self.model = EncoderBuilder().build_model(config)
 
-    def encode(self, inputs):
-        raise NotImplementedError
-
-    def decode(self, inputs):
-        raise NotImplementedError
 
 

@@ -8,25 +8,9 @@ Model Builder class which uses a configuration object to generate a Keras model.
 import tensorflow as tf
 
 
-class EncoderBuilder:
-    """
-    Builder of an encoder network.
-    """
+class Builder:
     def build_model(self, config):
-        """
-        Builds the model using the provided configuration.
-        :param config: the configuration specifying the model
-        :return: the generated Keras model
-        """
-        inputs = tf.keras.Input(shape=config["input_shape"])
-        x = self.build_layer(config["layers"][0])(inputs)
-        for layer in config["layers"][1:]:
-            x = self.build_layer(layer)(x)
-
-        z_mean = tf.keras.layers.Dense(config["latent_dim"], name="z_mean")(x)
-        z_log_var = tf.keras.layers.Dense(config["latent_dim"], name="z_log_var")(x)
-        z = SamplingLayer()([z_mean, z_log_var])
-        return tf.keras.Model(inputs, [z_mean, z_log_var, z], name="encoder")
+        raise NotImplementedError
 
     def build_layer(self, config):
         """
@@ -61,6 +45,40 @@ class EncoderBuilder:
             activation="relu",
             strides=config["strides"],
             padding="same")
+
+
+class EncoderBuilder(Builder):
+    def __init__(self):
+        super(EncoderBuilder, self).__init__()
+
+    def build_model(self, config):
+        """
+        Builds the model using the provided configuration.
+        :param config: the configuration specifying the model
+        :return: the generated Keras model
+        """
+        inputs = tf.keras.Input(shape=config["input_shape"])
+        x = self.build_layer(config["layers"][0])(inputs)
+        for layer in config["layers"][1:]:
+            x = self.build_layer(layer)(x)
+
+        z_mean = tf.keras.layers.Dense(config["latent_dim"], name="z_mean")(x)
+        z_log_var = tf.keras.layers.Dense(config["latent_dim"], name="z_log_var")(x)
+        z = SamplingLayer()([z_mean, z_log_var])
+        return tf.keras.Model(inputs, [z_mean, z_log_var, z], name="encoder")
+
+
+class DecoderBuilder(Builder):
+    def __init__(self):
+        super(DecoderBuilder, self).__init__()
+
+    def build_model(self, config):
+        inputs = tf.keras.Input(shape=(config["latent_dim"],))
+        x = self.build_layer(config["layers"][0])(inputs)
+        for layer in config["layers"][1:]:
+            x = self.build_layer(layer)(x)
+
+        return tf.keras.Model(inputs, x, name="decoder")
 
 
 class SamplingLayer(tf.keras.layers.Layer):
