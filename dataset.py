@@ -10,6 +10,7 @@ class Dataset:
     """
     def __init__(self):
         self.data = None
+        self.size = 0
 
     def load(self, dir, dims):
         """

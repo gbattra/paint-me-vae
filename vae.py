@@ -11,14 +11,14 @@ import tensorflow as tf
 from builders import EncoderBuilder, DecoderBuilder
 
 
-class VAE(tf.keras.Model):
+class Vae(tf.keras.Model):
     def __init__(self, config, **kwargs):
         """
         Initialize the VAE. Instantiate an encoder and a decoder. Setup metric trackers.
         :param config: the configuration for the encoder and decoder
         :param kwargs: default arg
         """
-        super(VAE, self).__init__()
+        super(Vae, self).__init__()
         self.encoder = EncoderBuilder().build_model(config)
         self.decoder = DecoderBuilder().build_model(config)
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
