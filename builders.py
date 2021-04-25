@@ -22,8 +22,33 @@ class Builder:
             return self.build_conv2d_layer(config)
         if config["type"] == "dense":
             return self.build_dense_layer(config)
+        if config["type"] == "conv2dt":
+            return self.build_conv2dt_layer(config)
+        if config["type"] == "reshape":
+            return self.build_reshape_layer(config)
         if config["type"] == "flatten":
             return tf.keras.layers.Flatten()
+
+    def build_conv2dt_layer(self, config):
+        """
+        Builds a conv2d transpose layer.
+        :param config: the config for the layer
+        :return: the new layer
+        """
+        return tf.keras.layers.Conv2DTranspose(
+            config["n_filters"],
+            config["filter_size"],
+            activation="relu",
+            strides=config["strides"],
+            padding="same")
+
+    def build_reshape_layer(self, config):
+        """
+        Builds a reshape layer.
+        :param config: the config for the layer
+        :return: the new layer
+        """
+        return tf.keras.layers.Reshape(config["shape"])
 
     def build_dense_layer(self, config):
         """
@@ -57,15 +82,13 @@ class EncoderBuilder(Builder):
         :param config: the configuration specifying the model
         :return: the generated Keras model
         """
-        inputs = tf.keras.Input(shape=config["input_shape"])
-        x = self.build_layer(config["layers"][0])(inputs)
-        for layer in config["layers"][1:]:
-            x = self.build_layer(layer)(x)
+        layers = [tf.keras.layers.InputLayer(input_shape=config["input_shape"])]
+        for layer in config["layers"]:
+            layers.append(self.build_layer(layer))
 
-        z_mean = tf.keras.layers.Dense(config["latent_dim"], name="z_mean")(x)
-        z_log_var = tf.keras.layers.Dense(config["latent_dim"], name="z_log_var")(x)
-        z = SamplingLayer()([z_mean, z_log_var])
-        return tf.keras.Model(inputs, [z_mean, z_log_var, z], name="encoder")
+        layers.append(tf.keras.layers.Dense(config["latent_dim"] * 2))
+
+        return tf.keras.Sequential(layers, name="encoder")
 
 
 class DecoderBuilder(Builder):
@@ -73,29 +96,9 @@ class DecoderBuilder(Builder):
         super(DecoderBuilder, self).__init__()
 
     def build_model(self, config):
-        inputs = tf.keras.Input(shape=(config["latent_dim"],))
-        x = self.build_layer(config["layers"][0])(inputs)
-        for layer in config["layers"][1:]:
-            x = self.build_layer(layer)(x)
+        layers = [tf.keras.layers.InputLayer(input_shape=(config["latent_dim"],))]
+        for layer in config["layers"]:
+            layers.append(self.build_layer(layer))
+        layers.append(tf.keras.layers.Conv2DTranspose(3, 3, activation="sigmoid", padding="same"))
 
-        return tf.keras.Model(inputs, x, name="decoder")
-
-
-class SamplingLayer(tf.keras.layers.Layer):
-    """
-    The sample layer of the VAE, or the encoding of the input.
-    """
-
-    def call(self, inputs, *args, **kwargs):
-        """
-        Override of built in Keras function. Uses reparameterization trick to sample z.
-        :param inputs: the inputs from the previous layer
-        :return: the encoding of the inputs
-        """
-
-        z_mean, z_log_var = inputs
-        batch = tf.shape(z_mean)[0]
-        dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
-
+        return tf.keras.Sequential(layers, name="decoder")

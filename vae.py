@@ -12,70 +12,54 @@ from builders import EncoderBuilder, DecoderBuilder
 
 
 class Vae(tf.keras.Model):
-    def __init__(self, config, **kwargs):
-        """
-        Initialize the VAE. Instantiate an encoder and a decoder. Setup metric trackers.
-        :param config: the configuration for the encoder and decoder
-        :param kwargs: default arg
-        """
-        super(Vae, self).__init__()
-        self.encoder = EncoderBuilder().build_model(config)
-        self.decoder = DecoderBuilder().build_model(config)
-        self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
-        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="reconstruction_loss")
-        self.kl_loss_tracker = tf.keras.metrics.Mean(name="kl_loss")
+   def __init__(self, config, **kwargs):
+       """
+       Initialize the VAE. Instantiate an encoder and a decoder. Setup metric trackers.
+       :param config: the configuration for the encoder and decoder
+       :param kwargs: default arg
+       """
+       super(Vae, self).__init__(**kwargs)
+       self.encoder = EncoderBuilder().build_model(config["encoder"])
+       self.decoder = DecoderBuilder().build_model(config["decoder"])
+       self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
+       self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="reconstruction_loss")
+       self.kl_loss_tracker = tf.keras.metrics.Mean(name="kl_loss")
 
-    def encode(self, inputs):
-        """
-        Encode the inputs.
-        :param inputs: the inputs to encode
-        :return: the encoding of the input
-        """
-        raise self.encoder(inputs)
+   def call(self, inputs, training=None, mask=None):
+       e = self.encode(inputs)
+       d = self.decode(e)
+       return d
 
-    def decode(self, inputs):
-        """
-        Decode the inputs.
-        :param inputs: the inputs to decode
-        :return: the decoded inputs
-        """
-        raise self.decoder(inputs)
+   @property
+   def metrics(self):
+       """
+       Builds list of metric trackers.
+       :return: the list of metric trackers
+       """
+       return [
+           self.total_loss_tracker,
+           self.reconstruction_loss_tracker,
+           self.kl_loss_tracker
+       ]
 
-    @property
-    def metrics(self):
-        """
-        Builds list of metric trackers.
-        :return: the list of metric trackers
-        """
-        return [
-            self.total_loss_tracker,
-            self.reconstruction_loss_tracker,
-            self.kl_loss_tracker
-        ]
+   # https://www.tensorflow.org/tutorials/generative/cvae
+   @tf.function
+   def sample(self, eps=None):
+       if eps is None:
+           eps = tf.random.normal(shape=(100, self.latent_dim))
+       return self.decode(eps, apply_sigmoid=True)
 
-    def train_step(self, data):
-        """
-        Custom train step which combines kl and reconstruction losses to gradient computation.
-        :param data: the data to fit to
-        :return: the loss dictionary
-        """
-        with tf.GradientTape() as tape:
-            z_mean, z_log_var, z = self.encoder(data)
-            reconst = self.decoder(z)
-            reconst_loss = tf.reduce_mean(
-                tf.reduce_sum(tf.keras.losses.binary_crossentropy(data, reconst), axis=(1, 2)))
-            kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
-            kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
-            total_loss = reconst_loss + kl_loss
+   def encode(self, x):
+       mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
+       return mean, logvar
 
-        grads = tape.gradient(total_loss, self.trainable_weights)
-        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
-        self.total_loss_tracker.update_state(total_loss)
-        self.reconstruction_loss_tracker.update_state(reconst_loss)
-        self.kl_loss_tracker.update_state(kl_loss)
+   def reparameterize(self, mean, logvar):
+       eps = tf.random.normal(shape=mean.shape)
+       return eps * tf.exp(logvar * .5) + mean
 
-        return {
-            "loss": self.total_loss_tracker.result(),
-            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-            "kl_loss": self.kl_loss_tracker.result()
-        }
+   def decode(self, z, apply_sigmoid=False):
+       logits = self.decoder(z)
+       if apply_sigmoid:
+           probs = tf.sigmoid(logits)
+           return probs
+       return logits
