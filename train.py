@@ -14,6 +14,7 @@ from vae_trainer import VaeTrainer
 from vae import Vae
 from dataset import Dataset
 from configs import encoder_config, decoder_config
+from builders import EncoderBuilder, DecoderBuilder
 
 
 def main():
@@ -23,11 +24,9 @@ def main():
     """
     name = str(sys.argv[1]).strip()
     dataset = Dataset().load(f'data/{name}', (128, 128)).format()
-    configs = {
-        "encoder": encoder_config,
-        "decoder": decoder_config
-    }
-    vae = Vae(configs)
+    encoder = EncoderBuilder().build_model(encoder_config)
+    decoder = DecoderBuilder().build_model(decoder_config)
+    vae = Vae(encoder, decoder)
     vae.encoder.summary()
     vae.decoder.summary()
     trainer = VaeTrainer(name, dataset, vae)
