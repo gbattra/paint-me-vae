@@ -18,12 +18,6 @@ encoder_config = {
            "strides": 2
        },
        {
-           "type": "conv2d",
-           "n_filters": 128,
-           "filter_size": 3,
-           "strides": 2
-       },
-       {
            "type": "flatten"
        }
    ]
@@ -34,17 +28,11 @@ decoder_config = {
    "layers": [
        {
            "type": "dense",
-           "n_units": 16*16*128
+           "n_units": 32*32*64
        },
        {
            "type": "reshape",
-           "shape": (16, 16, 128)
-       },
-       {
-           "type": "conv2dt",
-           "n_filters": 128,
-           "filter_size": 3,
-           "strides": 2
+           "shape": (32, 32, 64)
        },
        {
            "type": "conv2dt",
