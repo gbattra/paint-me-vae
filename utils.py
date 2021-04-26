@@ -42,7 +42,7 @@ def generate_and_save_images(tag, model, epoch, test_sample):
 
     for i in range(predictions.shape[0]):
         plt.subplot(4, 4, i + 1)
-        plt.imshow(predictions[i, :, :, 0], cmap='gray')
+        plt.imshow(predictions[i, :, :, :])
         plt.axis('off')
 
     plt.savefig(f'images/training/{tag.strip()}_image_at_epoch_{epoch}.png')

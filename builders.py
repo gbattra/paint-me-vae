@@ -99,6 +99,6 @@ class DecoderBuilder(Builder):
         layers = [tf.keras.layers.InputLayer(input_shape=(config["latent_dim"],))]
         for layer in config["layers"]:
             layers.append(self.build_layer(layer))
-        layers.append(tf.keras.layers.Conv2DTranspose(3, 3, activation="sigmoid", padding="same"))
+        layers.append(tf.keras.layers.Conv2DTranspose(3, 3, activation="relu", padding="same"))
 
         return tf.keras.Sequential(layers, name="decoder")
