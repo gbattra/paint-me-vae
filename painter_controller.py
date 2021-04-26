@@ -32,5 +32,10 @@ class PainterController:
         :return: the generated (painted) image
         """
         img = utils.read_img(path)
-        gen = utils.generate_and_save_images(path.split('/')[-1].split('.')[0], self.portrait_to_painting_vae, 0, img)
+        gen = utils.generate_and_save_images(
+            path.split('/')[-1].split('.')[0],
+            "paintings",
+            self.portrait_to_painting_vae,
+            0,
+            img)
         return gen

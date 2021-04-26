@@ -76,7 +76,7 @@ class VaeTrainer:
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epoch, elbo, end_time - start_time))
-            utils.generate_and_save_images(self.name, self.vae, epoch, test_sample)
+            utils.generate_and_save_images(self.name, "training", self.vae, epoch, test_sample)
 
         return self
 

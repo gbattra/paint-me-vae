@@ -1,1 +1,3 @@
 https://keras.io/examples/generative/vae/
+https://data.mendeley.com/datasets/289kxpnp57/1
+https://github.com/NVlabs/ffhq-dataset

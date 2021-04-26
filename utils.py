@@ -26,10 +26,11 @@ def read_img(path):
     return img
 
 
-def generate_and_save_images(tag, model, epoch, test_sample):
+def generate_and_save_images(tag, subdir, model, epoch, test_sample):
     """
     Generates an image using the VAE and saves it to a directory.
     :param tag: the tag of the image
+    :param subdir: the sub dir to save to
     :param model: the model to use
     :param epoch: the epoch to use to label the image
     :param test_sample: the sample to generate
@@ -45,6 +46,6 @@ def generate_and_save_images(tag, model, epoch, test_sample):
         plt.imshow(predictions[i, :, :, :])
         plt.axis('off')
 
-    plt.savefig(f'images/training/{tag.strip()}_image_at_epoch_{epoch}.png')
+    plt.savefig(f'images/{subdir}/{tag.strip()}_image_at_epoch_{epoch}.png')
     # plt.show()
     plt.close(fig)
