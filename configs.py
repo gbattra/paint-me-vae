@@ -3,7 +3,7 @@
 
 encoder_config = {
    "input_shape": (128, 128, 3),
-   "latent_dim": 2,
+   "latent_dim": 50,
    "layers": [
        {
            "type": "conv2d",
@@ -18,21 +18,33 @@ encoder_config = {
            "strides": 2
        },
        {
+           "type": "conv2d",
+           "n_filters": 128,
+           "filter_size": 3,
+           "strides": 2
+       },
+       {
            "type": "flatten"
        }
    ]
 }
 
 decoder_config = {
-   "latent_dim": 2,
+   "latent_dim": 50,
    "layers": [
        {
            "type": "dense",
-           "n_units": 32*32*64
+           "n_units": 16*16*128
        },
        {
            "type": "reshape",
-           "shape": (32, 32, 64)
+           "shape": (16, 16, 128)
+       },
+       {
+           "type": "conv2dt",
+           "n_filters": 128,
+           "filter_size": 3,
+           "strides": 2
        },
        {
            "type": "conv2dt",
