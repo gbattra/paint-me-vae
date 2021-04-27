@@ -29,10 +29,16 @@ def main():
 
     controller = PainterController(portrait_vae, painting_vae)
 
+    if len(sys.argv) < 3:
+        thumb_gen, paint_gen = controller.generate_samples()
+        return 0
+
     path = str(sys.argv[1]).strip()
     mode = str(sys.argv[2]).strip()
     if mode == "portrait_to_painting":
         painting = controller.portrait_to_painting(path)
+    if mode == "painting_to_portrait":
+        portrait = controller.painting_to_portrait(path)
 
     return 0
 

@@ -56,10 +56,10 @@ class VaeTrainer:
 
     def train(self, epochs):
         """
-       Trains the vae against the data.
-       :param epochs: the epochs to train for
-       :return: None
-       """
+        Trains the vae against the data.
+        :param epochs: the epochs to train for
+        :return: None
+        """
         optimizer = tf.keras.optimizers.Adam()
         for test_batch in self.dataset.val_data.take(1):
             test_sample = test_batch[0:10, :, :, :]

@@ -39,12 +39,13 @@ def generate_and_save_images(tag, subdir, model, epoch, test_sample):
     mean, logvar = model.encode(test_sample)
     z = model.reparameterize(mean, logvar)
     predictions = model.sample(z)
-    fig = plt.figure(figsize=(4, 4))
+    fig, ax = plt.subplots(5, 4)
 
     for i in range(predictions.shape[0]):
-        plt.subplot(4, 4, i + 1)
-        plt.imshow(predictions[i, :, :, :])
-        plt.axis('off')
+        c = i // 5
+        r = i % 5
+        ax[r, (c * 2) + 0].imshow(test_sample[i, :, :, :])
+        ax[r, (c * 2) + 1].imshow(predictions[i, :, :, :])
 
     plt.savefig(f'images/{subdir}/{tag.strip()}_image_at_epoch_{epoch}.png')
     # plt.show()

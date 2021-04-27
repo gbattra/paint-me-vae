@@ -48,6 +48,11 @@ class Vae(tf.keras.Model):
     # https://www.tensorflow.org/tutorials/generative/cvae
     @tf.function
     def sample(self, eps=None):
+        """
+        Sample from the latent space.
+        :param eps: the latent space to decode
+        :return: the decoded latent space
+        """
         if eps is None:
             eps = tf.random.normal(shape=(100, self.latent_dim))
         return self.decode(eps, apply_sigmoid=True)
